@@ -8,6 +8,8 @@ const App = () => {
 
   const [jwtToken, setJwtToken] = useState('')
 
+  const [weatherData, setWeatherData] = useState([])
+
   const authenticateUser = async () => {
     var requestOptions = {
       method: 'POST',
@@ -23,26 +25,49 @@ const App = () => {
     let { token, expireDate } = await response.json()
 
     setJwtToken(token)
+  }
 
-    console.log(token)
-    console.log(expireDate)
+  const getData = async () => {
+    var requestOptions = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json, text/plain, */*',
+        'Authorization': `Bearer ${jwtToken}`
+      }
+    };
+    
+    let response = await fetch("https://gotryit-api.herokuapp.com/api/weather", requestOptions)
+
+    let weatherResult = await response.json()
+
+    setWeatherData(weatherResult)
   }
 
   return (
     <div className="App">
+
       {jwtToken.length === 0 ?
-      <React.Fragment>
-        <div className="user-input">
-          Username: <input onChange={(e) => setUsername(e.target.value)} />
-        </div>
-        <div className="user-input">
-          Password: <input type="password" onChange={(e) => setPassword(e.target.value)} />
-        </div>
-        <button onClick={() => authenticateUser()}>Authenticate</button>
-      </React.Fragment> :
-      <React.Fragment>
-          <button onClick={() => setJwtToken('')}>Sign Out</button>
-      </React.Fragment>}
+
+        <React.Fragment>
+          <div className="user-input">
+            Username: <input onChange={(e) => setUsername(e.target.value)} />
+          </div>
+          <div className="user-input">
+            Password: <input type="password" onChange={(e) => setPassword(e.target.value)} />
+          </div>
+          <button onClick={() => authenticateUser()}>Authenticate</button>
+        </React.Fragment> :
+
+        <React.Fragment>
+            <button onClick={() => getData()}>Get data</button>
+            <div>
+              {weatherData.map(w => <div>{w.temperatureC}_{w.summary}</div>)}
+            </div>
+            <button onClick={() => setJwtToken('')}>Sign Out</button>
+        </React.Fragment>
+      }
+      
     </div>
   );
 }
